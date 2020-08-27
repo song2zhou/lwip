@@ -70,6 +70,10 @@
    "The Dynamic and/or Private Ports are those from 49152 through 65535" */
 #define UDP_LOCAL_PORT_RANGE_START  0xc000
 #define UDP_LOCAL_PORT_RANGE_END    0xffff
+/* (u16_t)~UDP_LOCAL_PORT_RANGE_START == 0b 0011 1111 1111 1111
+ *   so the first half formula ensure to be range from 0b 0000 0000 0000 0000 ~ 0b 0011 1111 1111 1111,
+ *   and the whole formula ensure to be range from 49152 to 65525
+ */
 #define UDP_ENSURE_LOCAL_PORT_RANGE(port) ((u16_t)(((port) & (u16_t)~UDP_LOCAL_PORT_RANGE_START) + UDP_LOCAL_PORT_RANGE_START))
 #endif
 

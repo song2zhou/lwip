@@ -1414,6 +1414,7 @@ dns_enqueue(const char *name, size_t hostnamelen, dns_found_callback found,
   /* search an unused entry, or the oldest one */
   lseq = 0;
   lseqi = DNS_TABLE_SIZE;
+  /* ++i is better than i++, cause it will not produce intermediate variables */
   for (i = 0; i < DNS_TABLE_SIZE; ++i) {
     entry = &dns_table[i];
     /* is it an unused entry ? */
@@ -1425,13 +1426,14 @@ dns_enqueue(const char *name, size_t hostnamelen, dns_found_callback found,
       u8_t age = (u8_t)(dns_seqno - entry->seqno);
       if (age > lseq) {
         lseq = age;
+        /* record the oldest completed request */
         lseqi = i;
       }
     }
   }
 
   /* if we don't have found an unused entry, use the oldest completed one */
-  if (i == DNS_TABLE_SIZE) {
+  if (i == DNS_TABLE_SIZE) { /* this indicate that we find all the dns_table, and not found unused item */
     if ((lseqi >= DNS_TABLE_SIZE) || (dns_table[lseqi].state != DNS_STATE_DONE)) {
       /* no entry can be used now, table is full */
       LWIP_DEBUGF(DNS_DEBUG, ("dns_enqueue: \"%s\": DNS entries table is full\n", name));
