@@ -87,6 +87,9 @@ struct udp_pcb *udp_pcbs;
 /**
  * Initialize this module.
  */
+/**
+ * This function will be called in lwip_init() when system init
+ */
 void
 udp_init(void)
 {
@@ -112,13 +115,19 @@ again:
   }
   /* Check all PCBs. */
   for (pcb = udp_pcbs; pcb != NULL; pcb = pcb->next) {
+    /* */
     if (pcb->local_port == udp_port) {
+      /* all the ports in the range have already be used */
       if (++n > (UDP_LOCAL_PORT_RANGE_END - UDP_LOCAL_PORT_RANGE_START)) {
         return 0;
       }
+
+      /* current port has been used, but we can try next one */
       goto again;
     }
   }
+
+  /* current port has not been user, so we can use it */
   return udp_port;
 }
 
@@ -213,9 +222,11 @@ udp_input(struct pbuf *p, struct netif *inp)
 
   PERF_START;
 
+  /* question : where udp define ? */
   UDP_STATS_INC(udp.recv);
 
   /* Check minimum length (UDP header) */
+  /* sometimes udp payload maybe NULL */
   if (p->len < UDP_HLEN) {
     /* drop short packets */
     LWIP_DEBUGF(UDP_DEBUG,
